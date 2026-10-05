@@ -1,0 +1,206 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX 20
+
+char nomes[MAX][100];
+char cpfs[MAX][20];
+char modelos[MAX][100];
+char placas[MAX][20];
+
+char servicos[MAX][100] = {
+    "Troca de oleo", "Troca de filtro de oleo", "Troca de filtro de ar",
+    "Troca de filtro de combustivel", "Alinhamento", "Balanceamento",
+    "Troca de pneus", "Troca de bateria", "Troca de pastilhas de freio",
+    "Troca de discos de freio", "Revisao do sistema de freios", "Troca de velas",
+    "Troca de correia dentada", "Troca de correia do alternador", "Troca de amortecedores",
+    "Alinhamento de direcao", "Troca de embreagem", "Limpeza do sistema de arrefecimento",
+    "Manutencao do ar-condicionado", "Diagnostico eletronico"
+};
+
+float valores[MAX] = {
+    100, 50, 60, 70, 100, 100, 150, 80, 120, 200,
+    150, 100, 300, 120, 400, 120, 800, 150, 200, 100
+};
+
+int servicosCliente[MAX][MAX];
+int quantidadeClientes = 0;
+
+void listarServicos() {
+    printf("\n===== SERVICOS =====\n");
+    for (int i = 0; i < MAX; i++) {
+        printf("%d - %s - R$ %.2f\n", i + 1, servicos[i], valores[i]);
+    }
+}
+
+// Busca universal: procura por CPF, Placa, Nome ou Modelo
+int encontrarCliente(char *busca) {
+    for (int i = 0; i < quantidadeClientes; i++) {
+        if (strcmp(cpfs[i], busca) == 0 ||
+            strcmp(placas[i], busca) == 0 ||
+            strstr(nomes[i], busca) != NULL ||
+            strstr(modelos[i], busca) != NULL) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void cadastrarCliente() {
+    if (quantidadeClientes >= MAX) {
+        printf("\nLimite de clientes atingido.\n");
+        return;
+    }
+
+    int i = quantidadeClientes;
+    printf("\n===== CADASTRO UNIVERSAL =====\n");
+
+    printf("Nome: ");
+    fgets(nomes[i], 100, stdin);
+    nomes[i][strcspn(nomes[i], "\n")] = '\0';
+
+    printf("CPF: ");
+    fgets(cpfs[i], 20, stdin);
+    cpfs[i][strcspn(cpfs[i], "\n")] = '\0';
+
+    printf("Modelo do Carro: ");
+    fgets(modelos[i], 100, stdin);
+    modelos[i][strcspn(modelos[i], "\n")] = '\0';
+
+    printf("Placa: ");
+    fgets(placas[i], 20, stdin);
+    placas[i][strcspn(placas[i], "\n")] = '\0';
+
+    for (int j = 0; j < MAX; j++) {
+        servicosCliente[i][j] = 0;
+    }
+
+    quantidadeClientes++;
+    printf("\nCliente cadastrado com sucesso!\n");
+}
+
+void buscarCliente() {
+    char busca[100];
+    printf("\n===== BUSCA UNIVERSAL =====\n");
+    printf("Digite CPF, Nome, Placa ou Modelo: ");
+    fgets(busca, 100, stdin);
+    busca[strcspn(busca, "\n")] = '\0';
+
+    int id = encontrarCliente(busca);
+    if (id == -1) {
+        printf("\nCliente nao encontrado.\n");
+        return;
+    }
+
+    printf("\n===== DADOS DO CLIENTE =====\n");
+    printf("Nome: %s\nCPF: %s\nCarro: %s\nPlaca: %s\n", nomes[id], cpfs[id], modelos[id], placas[id]);
+
+    printf("\nServicos vinculados:\n");
+    int temServico = 0;
+    for (int j = 0; j < MAX; j++) {
+        if (servicosCliente[id][j] == 1) {
+            printf("- %s\n", servicos[j]);
+            temServico = 1;
+        }
+    }
+    if (!temServico) printf("Nenhum servico registrado.\n");
+}
+
+void alterarServicos() {
+    char busca[100];
+    printf("\n===== ALTERAR SERVICOS =====\n");
+    printf("Digite CPF, Nome ou Placa do cliente: ");
+    fgets(busca, 100, stdin);
+    busca[strcspn(busca, "\n")] = '\0';
+
+    int cliente = encontrarCliente(busca);
+    if (cliente == -1) {
+        printf("\nCliente nao encontrado.\n");
+        return;
+    }
+
+    int opcao, continuar;
+    do {
+        listarServicos();
+        printf("\nEscolha o servico para adicionar: ");
+        scanf("%d", &opcao);
+        getchar();
+
+        if (opcao >= 1 && opcao <= MAX) {
+            servicosCliente[cliente][opcao - 1] = 1;
+            printf("Servico adicionado.\n");
+        } else {
+            printf("Servico invalido.\n");
+        }
+
+        printf("\nDeseja adicionar outro? (1 - Sim / 2 - Nao): ");
+        scanf("%d", &continuar);
+        getchar();
+    } while (continuar == 1);
+}
+
+void criarOrcamento() {
+    char busca[100];
+    printf("\n===== ORCAMENTO =====\n");
+    printf("Digite CPF, Nome ou Placa do cliente: ");
+    fgets(busca, 100, stdin);
+    busca[strcspn(busca, "\n")] = '\0';
+
+    int cliente = encontrarCliente(busca);
+    if (cliente == -1) {
+        printf("\nCliente nao encontrado.\n");
+        return;
+    }
+
+    printf("\nCliente: %s | Carro: %s (%s)\n\nServicos:\n", nomes[cliente], modelos[cliente], placas[cliente]);
+
+    float total = 0;
+    for (int j = 0; j < MAX; j++) {
+        if (servicosCliente[cliente][j] == 1) {
+            printf("- %s: R$ %.2f\n", servicos[j], valores[j]);
+            total += valores[j];
+        }
+    }
+    printf("\nTotal: R$ %.2f\n", total);
+}
+
+void listarClientes() {
+    printf("\n===== LISTA DE CLIENTES =====\n");
+    if (quantidadeClientes == 0) {
+        printf("Nenhum cliente cadastrado.\n");
+        return;
+    }
+    for (int i = 0; i < quantidadeClientes; i++) {
+        printf("[%d] %s | CPF: %s | %s (%s)\n", i + 1, nomes[i], cpfs[i], modelos[i], placas[i]);
+    }
+}
+
+int main() {
+    int opcao;
+    do {
+        printf("\n===== OFICINA MECANICA =====\n");
+        printf("1 - Cadastrar cliente\n");
+        printf("2 - Buscar cliente (Universal)\n");
+        printf("3 - Alterar servicos\n");
+        printf("4 - Criar orcamento\n");
+        printf("5 - Listar clientes\n");
+        printf("6 - Listar servicos\n");
+        printf("7 - Sair\n");
+        printf("\nEscolha uma opcao: ");
+        scanf("%d", &opcao);
+        getchar();
+
+        switch (opcao) {
+            case 1: cadastrarCliente(); break;
+            case 2: buscarCliente(); break;
+            case 3: alterarServicos(); break;
+            case 4: criarOrcamento(); break;
+            case 5: listarClientes(); break;
+            case 6: listarServicos(); break;
+            case 7: printf("\nPrograma encerrado.\n"); break;
+            default: printf("\nOpcao invalida.\n");
+        }
+    } while (opcao != 7);
+
+    return 0;
+}
