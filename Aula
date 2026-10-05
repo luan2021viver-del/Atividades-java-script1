@@ -2,7 +2,7 @@
 #include <string.h>
 
 #define MAX 20
-
+// criação do codigo
 char nomes[MAX][100];
 char cpfs[MAX][20];
 char modelos[MAX][100];
